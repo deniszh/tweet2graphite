@@ -1,21 +1,35 @@
-from twython import Twython
-from twython import TwythonStreamer
+import socket
+from pattern.web import Twitter, plaintext
+from pattern.nl  import sentiment as sentiment_nl
+from pattern.en  import sentiment as sentiment_en
+from pattern.fr  import sentiment as sentiment_fr
 
-APP_KEY = '15861352-DKZ6c4CD7CzwbtiSD4xXQJ0d6UccVWXxoKFLbmQ9l'
-APP_SECRET = ''
-OAUTH_TOKEN = '15861352-DKZ6c4CD7CzwbtiSD4xXQJ0d6UccVWXxoKFLbmQ9l'
-OAUTH_TOKEN_SECRET = ''
+CARBON_SERVER = '127.0.0.1'
+CARBON_PORT = 2003
 
-class MyStreamer(TwythonStreamer):
-    def on_success(self, data):
-        if 'text' in data:
-            print data['text'].encode('utf-8')
+def text_sentiment(tweet):
+    polarity = 0
+    subjectivity = 0
+    if tweet.language in ("nl", "fr", "en"):
+        s = plaintext(tweet.description)
+        if tweet.language == "nl":
+            (polarity, subjectivity) = sentiment_nl(s)
+        if tweet.language == "en":
+            (polarity, subjectivity) = sentiment_en(s)
+        if tweet.language == "fr":
+            (polarity, subjectivity) = sentiment_fr(s)
+    return polarity*(1.0 - subjectivity)
 
-    def on_error(self, status_code, data):
-        print status_code
-        self.disconnect()
+def send_msg_to_graphite(metric, value, timestamp):
+    message = '%s %s %d\n' % (metric, value, timestamp)
+    sock = socket.socket()
+    sock.connect(CARBON_SERVER, CARBON_PORT)
+    sock.sendall(message)
+    sock.close()
 
-stream = MyStreamer(APP_KEY, APP_SECRET,
-                    OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-
-stream.statuses.filter(track='marktplaats marktplaats.nl')
+term = 'marktplaats'
+for tweet in Twitter().search(term):
+    text = plaintext(tweet.description)
+    if term in text: # skip non-relevant results
+        weight = 1 + text_sentiment(tweet)
+        print tweet.date, text, weight
