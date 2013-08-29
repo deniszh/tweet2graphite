@@ -18,7 +18,8 @@ def datetime_to_ts(datestring):
 def text_sentiment(tweet):
     polarity = 0
     subjectivity = 0
-    if tweet.language in ("nl", "fr", "en"):
+    # you can add more languages for sentiments from Pattern module
+    if tweet.language in ("nl", "en"):
         s = plaintext(tweet.description)
         if tweet.language == "nl":
             (polarity, subjectivity) = sentiment_nl(s)
