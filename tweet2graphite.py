@@ -37,8 +37,8 @@ def send_msg_to_graphite(CARBON_SERVER, CARBON_PORT, metric, value, timestamp):
     sock = socket()
     try:
         sock.connect((CARBON_SERVER, CARBON_PORT))
-    except:
-        print("Couldn't connect to Graphite, is carbon-relay running?")
+    except Exception as out:
+        print("Couldn't connect to Graphite: %s" % out)
         return
     message = '%s %s %d\n' % (metric, value, timestamp)
     try:
@@ -87,12 +87,12 @@ if __name__ == "__main__":
         pass
     #print "Last TS=", last_ts
 
-    print search_term, start, results_count
+    #print search_term, start, results_count
     max_ts = last_ts
     for tweet in Twitter().search(search_term, start=start, count=results_count):
         text = plaintext(tweet.description)
         ts = datetime_to_ts(tweet.date)
-        print ts, text
+        #print ts, text
         if ts >= last_ts:  # skip old results
             weight = float(zero_weight)
             if do_sentiments:
