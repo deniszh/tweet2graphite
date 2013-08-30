@@ -67,12 +67,12 @@ if __name__ == "__main__":
 
         search_term = config.get("tweet2graphite", "search_term")
         CARBON_SERVER = config.get("tweet2graphite", "carbon_server")
-        CARBON_PORT = config.get("tweet2graphite", "carbon_port")
+        CARBON_PORT = int(config.get("tweet2graphite", "carbon_port"))
         CARBON_METRIC = config.get("tweet2graphite", "carbon_metric")
         last_ts_file = config.get("tweet2graphite", "last_ts_file")
-        results_count = config.get("tweet2graphite", "results_count")
-        zero_weight = config.get("tweet2graphite", "zero_weight")
-        do_sentiments = config.get("tweet2graphite", "do_sentiments")
+        results_count = int(config.get("tweet2graphite", "results_count"))
+        zero_weight = float(config.get("tweet2graphite", "zero_weight"))
+        do_sentiments = bool(config.get("tweet2graphite", "do_sentiments"))
     except IOError, e:
         print "Config %s not found" % CONFIG_FILE
         sys.exit(1)
